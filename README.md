@@ -112,3 +112,46 @@ FROM layoff_staging
 WHERE total_laid_off IS NULL
 AND percentage_laid_off IS NULL;
 ```
+
+# Part 2. Exploratory Data Analysis
+- After cleaning the data, I answer various questions about the dataset including:
+1. What were the companies with the highest amount of layoffs in this time period?
+2. Which years had the highest amount of layoffs?
+3. How many layoffs were there per month? 
+4. Which cities/regions had the highest amount of layoffs.
+
+- A detailed view of my EDA sql code can be found [here](layoffs_EDA.sql)
+
+```sql
+SELECT company, SUM(total_laid_off)
+FROM layoff_staging
+WHERE total_laid_off IS NOT NULL
+GROUP BY company
+ORDER BY 2 DESC;
+
+-- Selecting the years with the highest number of laid off employees
+SELECT EXTRACT(YEAR FROM date) AS year, SUM(total_laid_off) AS total_laid_off
+FROM layoff_staging
+WHERE date IS NOT NULL
+  AND total_laid_off IS NOT NULL
+GROUP BY year
+ORDER BY 1 DESC;
+
+-- Creating a rolling total of laid off employees by month in the US
+WITH rolling_total AS (SELECT date_trunc('month', date)::date AS year_month, SUM(total_laid_off) AS total_laid_off
+                       FROM layoff_staging
+                       WHERE date IS NOT NULL
+                         AND total_laid_off IS NOT NULL
+                         AND country = 'United States'
+                       GROUP BY year_month
+                       ORDER BY 1)
+SELECT year_month, total_laid_off, SUM(total_laid_off) OVER (ORDER BY year_month) AS rolling_total
+FROM rolling_total;
+
+-- Selecting the cities/regions with the highest number of laid off employees
+SELECT location, SUM(total_laid_off) AS total_laid_off
+FROM layoff_staging
+WHERE total_laid_off IS NOT NULL
+GROUP BY location
+ORDER BY 2 DESC;
+```
