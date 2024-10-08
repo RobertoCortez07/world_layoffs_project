@@ -15,7 +15,7 @@ create table layoffs
 );
 
 \\copy public.layoffs (company, location, industry, total_laid_off, percentage_laid_off, date, stage, country,
-                       funds_raised_millions) FROM '/Users/robertocortez/Downloads/Data analysis /Projects/world_layoffs_project/layoffs.csv' DELIMITER ',' CSV HEADER ENCODING 'UTF8' QUOTE '\"' ESCAPE '';
+                       funds_raised_millions) FROM '...world_layoffs_project/layoffs.csv' DELIMITER ',' CSV HEADER ENCODING 'UTF8' QUOTE '\"' ESCAPE '';
 
 -- 1. Remove any duplicates
 -- 2. Standardize the data
@@ -53,7 +53,7 @@ SELECT *,
        OVER (PARTITION BY company, location, industry, total_laid_off, percentage_laid_off, date, stage, country, funds_raised_millions) AS row_num
 FROM layoff_staging;
 
--- Checking if there are any duplicates
+-- Checking if there are any duplicates left
 WITH duplicate_CTE AS (SELECT *,
                               row_number()
                               OVER (PARTITION BY company, location, industry, total_laid_off, percentage_laid_off, date, stage, country, funds_raised_millions) AS row_num
@@ -95,7 +95,7 @@ ALTER COLUMN percentage_laid_off TYPE DECIMAL USING percentage_laid_off::DECIMAL
 ALTER TABLE layoff_staging
 ALTER COLUMN funds_raised_millions TYPE DECIMAL USING funds_raised_millions::DECIMAL;
 
--- Replacing the string 'NULL' with an actual NULL value
+-- Finding and replacing the string 'NULL' with an actual NULL value
 SELECT * FROM layoff_staging
 WHERE company = 'NULL'
 OR location = 'NULL'
